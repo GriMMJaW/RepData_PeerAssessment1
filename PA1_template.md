@@ -1,7 +1,22 @@
 PEER ASSESSMENT 1
 ==========
 
-*Note : The .csv data file has to be in the location as the markdownfile.*
+*Note : The .csv data file has to be at the location as the markdownfile while running using knitr and in your working directory while running the code in RStudio.*
+
+**Following are the important datasets produced :**
+- mydata : The original data read into RStudio.
+- totalsteps : Total number of steps taken each day. (Summed over all the intervals in a day).
+- averagesteps : The average number of steps every interval.
+- imputed_dataset : A dataset created after replacing the missing values in the original dataset.
+- imputed_totalsteps : Total number of steps taken each day. (For the imputed dataset).
+- imputed_average_steps : The average number of steps every interval. (For the imputed dataset).
+
+**Libraries used:**
+- lattice.
+- plyr.
+
+**User-Defined Functions:**
+- imputeByFactor : Replaces missing values in a particular column according to the average values in that column averaged over a particular factor.
 
 **Loading and preprocessing the data:**
 
@@ -19,6 +34,8 @@ mydata <- mydata[!is.na(mydata$steps), ]
 The blank spaces in the histogram indicate missing values.
 
 ```r
+## The below chunk of code creates an histogram for the total number of steps
+## per day and gives its mean and median value.
 totalsteps <- tapply(mydata$steps, mydata$date, sum, na.rm = TRUE)
 par(bg = "grey", col.main = "white", col.sub = "white", col.axis = "white", 
     col.lab = "white")
@@ -54,13 +71,15 @@ median(totalsteps, na.rm = TRUE)
 **What is the average daily activity pattern?**
 
 ```r
+## The below chunk of code creates an time series plot of average number of
+## steps taken per interval averaged over all days.
 averagesteps <- tapply(mydata$steps, as.factor(mydata$interval), mean, na.rm = TRUE)
 par(bg = "grey", col.main = "white", col.sub = "white", col.axis = "white", 
     col.lab = "white")
 plot(x = names(averagesteps), y = averagesteps, type = "l", col = "purple", 
     main = "Average number of steps taken/interval, averaged across all days", 
     xlab = "Interval", ylab = "Average number of steps taken", xaxt = "n")
-axis(side = 1, at = names(averagesteps))
+axis(side = 1, at = seq(from = 0, to = 2350, by = (2350/288)), labels = c(0:288))
 ```
 
 ![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
@@ -134,6 +153,8 @@ head(imputed_dataset)
 
 
 ```r
+## The below chunk creates an histogram for total number of steps taken each
+## day and calculates its mean and median.
 imputed_totalsteps <- tapply(imputed_dataset$steps, imputed_dataset$date, sum, 
     na.rm = TRUE)
 par(bg = "grey", col.main = "white", col.sub = "white", col.axis = "white", 
@@ -171,6 +192,8 @@ From the above values it can be seen that the mean is the same as above and the 
 
 
 ```r
+## The below chunk creates a new column classifying the days in weekdays and
+## weekends.
 imputed_dataset$date = as.Date(as.character(imputed_dataset$date), format = "%Y-%m-%d")
 imputed_dataset$date = weekdays(imputed_dataset$date)
 imputed_dataset$date = as.character(imputed_dataset$date)
@@ -183,13 +206,13 @@ for (i in 1:length(imputed_dataset$date)) {
         stop("invalid outcome"))
 }
 imputed_dataset$new_date <- as.factor(imputed_dataset$new_date)
-imputed_averagesteps <- tapply(imputed_dataset$steps, as.factor(imputed_dataset$interval), 
-    mean)
 ```
 
 
 
 ```r
+## The below chunk of data creates a panel plot for average number of steps
+## every interval for weekdays and weekends.
 library(plyr)
 library(lattice)
 imputed_average_steps <- ddply(imputed_dataset, .(new_date, interval), summarize, 
